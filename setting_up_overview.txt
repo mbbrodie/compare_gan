@@ -1,0 +1,42 @@
+Startup a TPU (v3-8,v3-32, etc). usually europe-west4-a has good options.
+
+Startup VM ****with a GPU****.
+TPUs can train quickly but are poor for evaluation. 
+(That alone might be reason to use a GPU-only setup)
+
+Here's my VM setup:
+	c2-deeplearning-pytorch-1-4-cu101-v20200826-debian-10 
+	2 TB disk
+	n1-highmem-8 (8 vCPUs, 52 GB memory)  -- TPUs are doing most of the work, but you still want some power for your GPU
+	1 NVIDIA Tesla V100
+	Zone: us-central1-a
+		- US or Europe both give good performance for regions.
+	Allow HTTP/HTTPS traffic
+
+
+This boot Image comes with PyTorch installed.
+You'll be prompted to install nvidia drivers, go ahead and install (1 min)
+
+Some other important installs:
+sudo apt-get install python3
+sudo apt-get install pip3
+export pip=pip3
+export python=python3
+
+If you need Tensorflow:
+pip install tensorflow-gpu==1.15.0
+
+Because Tensorflow is designed by an enclave of sadist engineers, your tensorflow-gpu install will NOT actually use the gpu out of the box.
+You'll need to rename, copy, or symlink a few libraries:
+
+cp /usr/local/cuda-10.1/lib64/libcudart.so libcudart.so.10.0
+cp /usr/local/cuda-10.1/lib64/libcublas.so.10 libcublas.so.10.0
+cp /usr/local/cuda-10.1/lib64/libcufft.so.10 libcufft.so.10.0
+cp /usr/local/cuda-10.1/lib64/libcurand.so.10 libcurand.so.10.0
+cp /usr/local/cuda-10.1/lib64/libcusolver.so.10  libcusolver.so.10.0
+cp /usr/local/cuda-10.1/lib64/libcusparse.so.10  libcusparse.so.10.0
+
+TF-GAN, CompareGAN will all have their own fun bugs to sort out. But these will get you started.
+
+
+
