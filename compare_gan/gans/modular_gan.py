@@ -289,8 +289,8 @@ class ModularGAN(AbstractGAN):
   def as_module_spec(self):
     """Returns the generator network as TFHub module spec."""
     models = ["gen", "disc"]
-    default_batch_size = 64
-    batch_sizes = [8, 16, 32, 64]
+    default_batch_size = 1024#64
+    batch_sizes = [8, 16, 32, 64,1024]
     if "resnet" in self._architecture:
       # Only ResNet architectures support dynamic batch size.
       batch_sizes.append(None)

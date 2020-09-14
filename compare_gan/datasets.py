@@ -258,8 +258,9 @@ class ImageDatasetV2(object):
     del seed
     return image, label
 
+  """
   def train_input_fn(self, params=None, preprocess_fn=None):
-    """Input function for reading data.
+    Input function for reading data.
 
     Args:
       params: Python dictionary with parameters. Must contain the key
@@ -269,7 +270,7 @@ class ImageDatasetV2(object):
 
     Returns:
       `tf.data.Dataset` with preprocessed and batched examples.
-    """
+    
     if params is None:
       params = {}
     seed = self._get_per_host_random_seed(params.get("context", None))
@@ -289,7 +290,50 @@ class ImageDatasetV2(object):
     if "batch_size" in params:
       ds = ds.batch(params["batch_size"], drop_remainder=True)
     return ds.prefetch(tf.contrib.data.AUTOTUNE)
+  """
+  def train_input_fn(self, params=None, preprocess_fn=None):
+    """Input function for reading data.
 
+    Args:
+      params: Python dictionary with parameters. Must contain the key
+        "batch_size". TPUEstimator will set this for you!
+      preprocess_fn: Function to process single examples. This is allowed to
+        have a `seed` argument.
+
+    Returns:
+      `tf.data.Dataset` with preprocessed and batched examples.
+    """
+    if params is None:
+      params = {}
+    seed = self._get_per_host_random_seed(params.get("context", None))
+    logging.info("train_input_fn(): params=%s seed=%s", params, seed)
+
+    ds = self._load_dataset(split=self._train_split)
+    # ds = ds.filter(self._train_filter_fn)
+    ds = ds.repeat()
+    def one_function(image, label):
+      images, labels = self._train_transform_fn(image, label, seed=seed)
+      features = {
+          "images": images,
+          "z": np.random.randn(1024).astype(np.float32),
+          #"z": np.random.randn(120).astype(np.float32),
+      }
+      features["sampled_labels"] = labels
+      
+      return features, labels
+    ds = ds.map(one_function)
+      
+    # ds = ds.map(functools.partial(self._train_transform_fn, seed=seed))
+    # if preprocess_fn is not None:
+      # if "seed" in inspect.getargspec(preprocess_fn).args:
+      #   preprocess_fn = functools.partial(preprocess_fn, seed=seed)
+      # ds = ds.map(one_function)
+      # Add a feature for the random offset of operations in tpu_random.py.
+    ds = tpu_random.add_random_offset_to_features(ds)
+    # ds = ds.shuffle(FLAGS.data_shuffle_buffer_size, seed=seed)
+    if "batch_size" in params:
+      ds = ds.batch(params["batch_size"], drop_remainder=True)
+    return ds.prefetch(tf.contrib.data.AUTOTUNE)
   def eval_input_fn(self, params=None, split=None):
     """Input function for reading data.
 

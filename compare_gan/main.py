@@ -111,7 +111,7 @@ def main(unused_argv):
 
 
   if FLAGS.use_tpu is None:
-    FLAGS.use_tpu = bool(os.environ.get("TPU_NAME", ""))
+    #FLAGS.use_tpu = bool(os.environ.get("TPU_NAME", ""))
     if FLAGS.use_tpu:
       logging.info("Found TPU %s.", os.environ["TPU_NAME"])
   run_config = _get_run_config()
