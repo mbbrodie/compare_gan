@@ -86,7 +86,8 @@ class EvalDataSample(object):
 
 def get_real_images(dataset,
                     num_examples,
-                    split=None,
+                    split='train',
+                    #split=None,
                     failure_on_insufficient_examples=True):
   """Get num_examples images from the given dataset/split.
 

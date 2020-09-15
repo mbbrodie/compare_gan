@@ -315,7 +315,7 @@ class ImageDatasetV2(object):
       images, labels = self._train_transform_fn(image, label, seed=seed)
       features = {
           "images": images,
-          "z": np.random.randn(1024).astype(np.float32),
+          "z": np.random.randn(128).astype(np.float32),
           #"z": np.random.randn(120).astype(np.float32),
       }
       features["sampled_labels"] = labels
